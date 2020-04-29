@@ -1,5 +1,5 @@
 from datetime import datetime
-from Celula import *
+from Celula.Celula import Celula
 class Corrida():
     def __init__(self):
         self.id = 0

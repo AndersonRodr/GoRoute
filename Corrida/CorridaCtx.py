@@ -1,7 +1,8 @@
 from datetime import datetime
 from dateutil.parser import parse ##pip install python-dateutil ou pip3 install python-dateutil
-from Celula import *
-from Corrida import *
+
+from Celula.Celula import Celula
+from Corrida.Corrida import Corrida
 
 listaCorrida = []
 
