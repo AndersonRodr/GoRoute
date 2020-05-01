@@ -1,15 +1,18 @@
 import pymysql
 
-def setConexao():
+def getConexao():
     conexao = pymysql.connect(
             host = 'localhost',
             user = 'root',
             passwd = '',
             database = 'psd'
         )
-    getCursor(conexao)
+    return conexao
 
-def getCursor(conexao):
+def inserirCelulas(conexao, lista):
     cursor = conexao.cursor()
-    cursor.execute("SHOW DATABASES")
+    insert = "INSERT INTO celula (referencia, latCentral, logCentral) VALUES (%s,%s,%s)"
+    cursor.executemany(insert, lista)
+    conexao.commit()
+    ##print(cursor.rowcount, "Inseridas com sucesso")
 

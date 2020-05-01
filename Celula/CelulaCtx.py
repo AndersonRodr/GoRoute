@@ -1,27 +1,23 @@
 from Celula import Celula
 import pymysql
-
+import time
 
 ##Leste.Sul
 ##Log.Lat
-listaCelulas = []
-stringSQLInsert = "a"
 
-
+listaInserts = []
 def criarCelulas():
     latLogCentral = ""
     celula = Celula()
-    for i in range(1,3):
-        for j in range (1, 3):
+    for i in range(1, 301):
+        for j in range(1, 301):
             latLogCentral = latLogCentralCelula(i, j).split(",")
             celula.numero = float(str(i) + "." + str(j))
             celula.latCentral = float(latLogCentral[0])
             celula.logCentral = float(latLogCentral[1])
-            listaCelulas.append(celula)
-            stringInsert = "INSERT INTO celula (referencia, latCentral, logCentral) VALUES (" "'" + str(i) + "." + str(j) + "'" + "," + latLogCentral[0] + "," + latLogCentral[1] + ")"
-            ##sql = "INSERT INTO celula (referencia, latCentral, logCentral) VALUES ("'"2.3"'", 12.3, 37.7836)"
-            setCursor(getConexao(), stringInsert)
-            stringInsert = ""
+            tuplaInsert = (str(i) + "." + str(j), latLogCentral[0], latLogCentral[1])
+            listaInserts.append(tuplaInsert)
+    inserirCelulas(getConexao(), listaInserts)
 
 def latLogCentralCelula(celulaLog, celulaLat):
     celulaBase = "1.1"
@@ -37,11 +33,6 @@ def latLogCentralCelula(celulaLog, celulaLat):
     latResultante = ((celulaLat - 1) * grauLat) + latBase
     return (str(latResultante) + "," + str(logResultante))
 
-def listarCelulas():
-    return listaCelulas
-
-
-
 def getConexao():
     conexao = pymysql.connect(
             host = 'localhost',
@@ -52,12 +43,15 @@ def getConexao():
 
     return conexao
 
-def setCursor(conexao, stringInsert):
+def inserirCelulas(conexao, lista):
     cursor = conexao.cursor()
-    cursor.execute(stringInsert)
+    insert = "INSERT INTO celula (referencia, latCentral, logCentral) VALUES (%s,%s,%s)"
+    cursor.executemany(insert, lista)
     conexao.commit()
-    print(cursor.rowcount, "Inserida com sucesso")
+    print(cursor.rowcount, "Inseridas com sucesso")
 
-criarCelulas()
+##ini = time.time()
+##criarCelulas()
+##fim = time.time()
 
-##print (len(listarCelulas()))
+##print(fim - ini)
