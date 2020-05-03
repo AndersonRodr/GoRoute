@@ -1,10 +1,9 @@
-from Celula import  *
+from Celula.Celula import  *
 from datetime import datetime
-class RotaFrequente():
+class RotasFrequentes():
     def __init__(self):
-        self.__id = 0
-        self.__celulaInicio = Celula()
-        self.__celulaFim = Celula()
-        self.__horaSaida = datetime
-        self.__horaChegada= datetime
-        self.__delay = 0
+        self.celulaInicio = Celula()
+        self.celulaFim = Celula()
+        self.horaSaida = datetime
+        self.horaChegada= datetime
+        self.delay = 0

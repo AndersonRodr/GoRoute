@@ -1,4 +1,6 @@
+import datetime as datetime
 import pandas as pd
+from Conexao import *
 #!/usr/bin/env python
 # coding: utf-8
 def rotas_frequentes(corridas_selecionadas):
@@ -27,15 +29,22 @@ def rotas_frequentes(corridas_selecionadas):
         for j in range(complemento):
             top10 = top10.append( df_complementar, ignore_index = True)
     return(top10)
-"""
-# Recuperar os dados do banco, considerando a ultima meia hora
-# Transformar os dados obtidos do banco em um DataFrame com as colunas id, id_celula_inicio e id_celula_fim
-# Adicionar o horário da consulta e o delay depois.
-d = {'id':[1,2,3,4,5,6,7,8,9,10], # Provisório até pegar do banco:
-     'id_celula_inicio':[1,5,1,2,3,4,1,5,5,6],
-     'id_celula_fim':   [3,9,3,2,2,2,3,8,9,8]}
 
-corridas_selecionadas = pd.DataFrame(data = d)   
-top10 = rotas_frequentes(corridas_selecionadas) 
-print(top10)
-"""
+def get_rotas_frequentes():
+    # Recuperar os dados do banco, considerando a ultima meia hora
+    dateBase  = datetime.datetime.now().date()
+    horaBase = datetime.time(0,30,00)
+    dataHoraBase = datetime.datetime.combine(dateBase, horaBase)
+    dataHoraAtual = datetime.datetime.now()
+    timeChegada = str(datetime.datetime.now().time())[-15:-7]
+    timeSaida = str(dataHoraAtual - dataHoraBase )[-15:-7]
+    if len(timeSaida) < len(timeChegada):
+        timeSaida = ('0%s' %timeSaida)
+    conexao = getConexao()
+    listaCorridas = list(getCorridaList(conexao,timeSaida,timeChegada))
+    # Transformar os dados obtidos do banco em um DataFrame com as colunas id, id_celula_inicio e id_celula_fim
+    corridas_selecionadas = pd.DataFrame.from_records(listaCorridas, columns=("id", "id_celula_inicio", "id_celula_fim") )
+    # Recupera as 10 rotas mais frequentes.)
+    top10 = rotas_frequentes(corridas_selecionadas)
+    return ("Hora de Saida: %s\nHora de Chegada: %s\n10 Rotas mais frequentes\n%s" % (timeSaida, timeChegada, top10))
+print(get_rotas_frequentes())
