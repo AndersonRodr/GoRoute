@@ -1,5 +1,3 @@
-import datetime
-import pandas as pd
 import pymysql
 def getConexao():
     conexao = pymysql.connect(
@@ -20,4 +18,5 @@ def getCorridaList(conexao, timeSaida, timeChegada):
              "data_horaChegada LIKE '%%%s';" % (timeSaida, timeChegada))
     cursor.execute(query)
     listaCorrida = cursor.fetchall()
+    conexao.close()
     return listaCorrida

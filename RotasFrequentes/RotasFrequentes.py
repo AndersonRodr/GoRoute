@@ -1,9 +1,9 @@
 from Celula.Celula import  *
 from datetime import datetime
+import pandas as pd
 class RotasFrequentes():
     def __init__(self):
-        self.celulaInicio = Celula()
-        self.celulaFim = Celula()
+        self.rotasFrequentesFrame = pd.DataFrame
         self.horaSaida = datetime
         self.horaChegada= datetime
         self.delay = 0

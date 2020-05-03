@@ -1,6 +1,7 @@
 import datetime as datetime
 import pandas as pd
 from Conexao import *
+from RotasFrequentes import RotasFrequentes
 #!/usr/bin/env python
 # coding: utf-8
 def rotas_frequentes(corridas_selecionadas):
@@ -46,5 +47,10 @@ def get_rotas_frequentes():
     corridas_selecionadas = pd.DataFrame.from_records(listaCorridas, columns=("id", "id_celula_inicio", "id_celula_fim") )
     # Recupera as 10 rotas mais frequentes.)
     top10 = rotas_frequentes(corridas_selecionadas)
-    return ("Hora de Saida: %s\nHora de Chegada: %s\n10 Rotas mais frequentes\n%s" % (timeSaida, timeChegada, top10))
-print(get_rotas_frequentes())
+    rotasResult = RotasFrequentes()
+    rotasResult.rotasFrequentesFrame = top10
+    rotasResult.horaSaida = timeSaida
+    rotasResult.horaChegada = timeChegada
+    return (rotasResult)
+rotas = get_rotas_frequentes()
+print("Hora de Saida: %s\nHora de Chegada: %s\n10 Rotas mais frequentes:\n%s" % (rotas.horaSaida, rotas.horaChegada, rotas.rotasFrequentesFrame))
