@@ -95,6 +95,7 @@ def criarCorridasDoArquivo():
             corrida.celulaFim.id = idsCelulas[1]
             tuplaInsert = (str(corrida.horaSaida), str(corrida.horaChegada),
                                 corrida.distanciaCorrida,
+                                corrida.tempoCorrida,
                                 corrida.valorTarifa,
                                 corrida.sobreTaxa,
                                 corrida.imposto,
@@ -103,10 +104,10 @@ def criarCorridasDoArquivo():
                                 corrida.log_inicio,
                                 corrida.lat_fim,
                                 corrida.log_fim,
-                                corrida.tempoCorrida,
                                 corrida.celulaInicio.id,
                                 corrida.celulaFim.id)
             listaInserts.append(tuplaInsert)
+    print(len(listaInserts))
     inserirListaCorridas(getConexao(), listaInserts)
 
 
@@ -124,8 +125,8 @@ def getConexao():
 
 def inserirListaCorridas(conexao, lista):
     cursor = conexao.cursor()
-    stringInsert = "insert into corrida (data_horaSaida, data_horaChegada, distancia, valorTarifa, sobretaxa, " \
-                                      "imposto, valorTotal, latInicio, logInicio, latFim, logFim, duracao, id_celula_inicio, id_celula_fim) " \
+    stringInsert = "insert into corrida (data_horaSaida, data_horaChegada, distancia, duracao, valorTarifa, sobretaxa, " \
+                                      "imposto, valorTotal, latInicio, logInicio, latFim, logFim, id_celula_inicio, id_celula_fim) " \
                                       "values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
     cursor.executemany(stringInsert, lista)
@@ -144,12 +145,6 @@ ini = time.time()
 criarCorridasDoArquivo()
 fim = time.time()
 print(fim - ini)
-
-
-
-
-
-
 
 
 

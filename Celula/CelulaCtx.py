@@ -64,8 +64,7 @@ def buscarCelulasPorReferencia(conexao, stringSQL):
 
 buscarCelulasPorReferencia(getConexao(), "select c.id as id_celulaInicio, a.id as id_celulaFim from celula c, celula a where c.referencia = '1.1' and a.referencia = '1.2'")
 
-##ini = time.time()
-##criarCelulas()
-##fim = time.time()
-
-##print(fim - ini)
+ini = time.time()
+criarCelulas()
+fim = time.time()
+print(fim - ini)
