@@ -50,6 +50,20 @@ def inserirCelulas(conexao, lista):
     conexao.commit()
     print(cursor.rowcount, "Inseridas com sucesso")
 
+def buscarCelulasPorReferencia(conexao, stringSQL):
+    cursor = conexao.cursor()
+    ##cursor.execute("SELECT c.id AS id_celulaInicio, a.id AS id_celulaFim FROM celula c, celula a " \
+      ##                          "WHERE c.referencia =  AND a.referencia = ")
+
+    cursor.execute(stringSQL)
+
+    result = cursor.fetchall()
+
+    for i in result:
+        print(i)
+
+buscarCelulasPorReferencia(getConexao(), "select c.id as id_celulaInicio, a.id as id_celulaFim from celula c, celula a where c.referencia = '1.1' and a.referencia = '1.2'")
+
 ##ini = time.time()
 ##criarCelulas()
 ##fim = time.time()

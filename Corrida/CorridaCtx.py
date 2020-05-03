@@ -4,13 +4,14 @@ from dateutil.parser import parse ##pip install python-dateutil ou pip3 install 
 
 from Celula.Celula import Celula
 from Corrida import Corrida
+import time
 
 listaCorrida = []
 
 ##Os inteiros andam na horizontal
 ##Os decimais andam na vertical
 
-def atribuirCelulaCoordenadas(longitude, latitude):
+def getReferenciaCelulaDaCorrida(longitude, latitude):
     latitude = abs(latitude)
     longitude = abs(longitude)
     
@@ -41,7 +42,24 @@ def converterSringDatetime(datetimeString):
     datetimeFormatado = datetime.strptime(datetimeString, datetime_formato)
     return datetimeFormatado
 
+def latLogInvalida(corrida):
+    invalido = True
+    if corrida.log_inicio != 0 and \
+            corrida.lat_inicio != 0 and \
+            corrida.log_fim != 0 and \
+            corrida.lat_fim != 0 and \
+            abs(corrida.log_inicio)//1 != 0 and \
+            abs(corrida.lat_inicio)//1 != 0 and \
+            abs(corrida.log_fim)//1 != 0 and \
+            abs(corrida.lat_fim)//1 != 0:
+        invalido = False
+
+    return invalido
+
+
 def criarCorridasDoArquivo():
+    listaInserts = []
+    stringFinal = ""
     arquivo = open('Registros.txt', 'r')
     for i in arquivo.readlines():
         arquivo.close()
@@ -52,22 +70,18 @@ def criarCorridasDoArquivo():
         corrida.log_fim = float(i.split(",")[8])
         corrida.lat_fim = float(i.split(",")[9])
 
-        if (corrida.log_inicio != 0 and
-                corrida.lat_inicio != 0 and
-                corrida.log_fim != 0 and
-                corrida.lat_fim != 0):
-
+        if latLogInvalida(corrida) == False:
             corrida.horaSaida = converterSringDatetime(i.split(",")[2])
             corrida.horaChegada = converterSringDatetime(i.split(",")[3])
             corrida.tempoCorrida = float(i.split(",")[4])
             corrida.distanciaCorrida = float(i.split(",")[5])
 
             corrida.celulaInicio = Celula()
-            ##corrida.celulaInicio.numero = atribuirCelulaCoordenadas(corrida.log_inicio, corrida.lat_inicio)
+            corrida.celulaInicio.numero = getReferenciaCelulaDaCorrida(corrida.log_inicio, corrida.lat_inicio)
             ##Buscar id da célula de início pra salvar o seu id na corrida
 
             corrida.celulaFim = Celula()
-            ##corrida.celulaFim.numero = atribuirCelulaCoordenadas(corrida.log_fim, corrida.lat_fim)
+            corrida.celulaFim.numero = getReferenciaCelulaDaCorrida(corrida.log_fim, corrida.lat_fim)
             ##Buscar id da célula de fim pra salvar o seu id na corrida
 
             corrida.valorTarifa = float(i.split(",")[11])
@@ -75,7 +89,26 @@ def criarCorridasDoArquivo():
             corrida.imposto = float(i.split(",")[13])
             corrida.valorTotal = float(i.split(",")[16])
 
-            listaCorrida.append(corrida)
+            stringSQL = "select c.id as id_celulaInicio, a.id as id_celulaFim from celula c, celula a where c.referencia = " + "'" + corrida.celulaInicio.numero + "'" + " and a.referencia = " + "'" + corrida.celulaFim.numero + "'" + ";"
+            idsCelulas = buscarCelulasPorReferencia(getConexao(), stringSQL)
+            corrida.celulaInicio.id = idsCelulas[0]
+            corrida.celulaFim.id = idsCelulas[1]
+            tuplaInsert = (str(corrida.horaSaida), str(corrida.horaChegada),
+                                corrida.distanciaCorrida,
+                                corrida.valorTarifa,
+                                corrida.sobreTaxa,
+                                corrida.imposto,
+                                corrida.valorTotal,
+                                corrida.lat_inicio,
+                                corrida.log_inicio,
+                                corrida.lat_fim,
+                                corrida.log_fim,
+                                corrida.tempoCorrida,
+                                corrida.celulaInicio.id,
+                                corrida.celulaFim.id)
+            listaInserts.append(tuplaInsert)
+    inserirListaCorridas(getConexao(), listaInserts)
+
 
 def getCorridas():
     return listaCorrida
@@ -91,29 +124,28 @@ def getConexao():
 
 def inserirListaCorridas(conexao, lista):
     cursor = conexao.cursor()
-    insert = "INSERT INTO corrida (data_horaSaida, data_horaChegada, distancia, valorTarifa, sobretaxa, "\
-						"imposto, valorTotal, latInicio, logInicio, latFim, logFim, id_celula_inicio, id_celula_fim) "\
-						"VALUES (%s, $s, "\
-								"%s, %s, %s, %s, %s, %s, %s, %s, %s, " \
-                                "(SELECT c.id AS id_celulaInicio, a.id AS id_celulaFim from celula c, celula a " \
-                                "WHERE c.referencia = '1.1' AND a.referencia = '1.2'));"
-    cursor.executemany(insert, lista)
+    stringInsert = "insert into corrida (data_horaSaida, data_horaChegada, distancia, valorTarifa, sobretaxa, " \
+                                      "imposto, valorTotal, latInicio, logInicio, latFim, logFim, duracao, id_celula_inicio, id_celula_fim) " \
+                                      "values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+
+    cursor.executemany(stringInsert, lista)
     conexao.commit()
+    print(cursor.rowcount, "Inseridas com sucesso")
 
-    stringTeste = "insert into corrida (data_horaSaida, data_horaChegada, distancia, valorTarifa, sobretaxa, "\
-						"imposto, valorTotal, latInicio, logInicio, latFim, logFim, id_celula_inicio, id_celula_fim) "\
-						"values ('2020-04-05 10:15:20', '2020-04-05 10:30:20', "\
-								"3.5, 3.0, 0.0, 0.0, 17.35, 40.793140, -73.973000,40.778465, -73.981453, " \
-                                "(select c.id as id_celulaInicio, a.id as id_celulaFim from celula c, celula a " \
-                                "where c.referencia = '1.1' and a.referencia = '1.2'));"
+def buscarCelulasPorReferencia(conexao, stringSQL):
+    cursor = conexao.cursor()
+    cursor.execute(stringSQL)
+    result = cursor.fetchall()
 
+    for i in result:
+        return i
 
-
-
+ini = time.time()
 criarCorridasDoArquivo()
-##getCorridas()
+fim = time.time()
+print(fim - ini)
 
-print(listaCorrida[200].horaChegada)
+
 
 
 
