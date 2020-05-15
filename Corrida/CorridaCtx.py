@@ -71,6 +71,7 @@ def criarCorridasDoArquivo():
         corrida.lat_fim = float(i.split(",")[9])
 
         if latLogInvalida(corrida) == False:
+            corrida.identificadorTaxi = i.split(",")[0]
             corrida.horaSaida = converterSringDatetime(i.split(",")[2])
             corrida.horaChegada = converterSringDatetime(i.split(",")[3])
             corrida.tempoCorrida = float(i.split(",")[4])
@@ -87,18 +88,22 @@ def criarCorridasDoArquivo():
             corrida.valorTarifa = float(i.split(",")[11])
             corrida.sobreTaxa = float(i.split(",")[12])
             corrida.imposto = float(i.split(",")[13])
+            corrida.gorjeta = float(i.split(",")[14])
             corrida.valorTotal = float(i.split(",")[16])
 
             stringSQL = "select c.id as id_celulaInicio, a.id as id_celulaFim from celula c, celula a where c.referencia = " + "'" + corrida.celulaInicio.numero + "'" + " and a.referencia = " + "'" + corrida.celulaFim.numero + "'" + ";"
             idsCelulas = buscarCelulasPorReferencia(getConexao(), stringSQL)
             corrida.celulaInicio.id = idsCelulas[0]
             corrida.celulaFim.id = idsCelulas[1]
-            tuplaInsert = (str(corrida.horaSaida), str(corrida.horaChegada),
+            tuplaInsert = (corrida.identificadorTaxi,
+                                str(corrida.horaSaida),
+                                str(corrida.horaChegada),
                                 corrida.distanciaCorrida,
                                 corrida.tempoCorrida,
                                 corrida.valorTarifa,
                                 corrida.sobreTaxa,
                                 corrida.imposto,
+                                corrida.gorjeta,
                                 corrida.valorTotal,
                                 corrida.lat_inicio,
                                 corrida.log_inicio,
@@ -125,9 +130,9 @@ def getConexao():
 
 def inserirListaCorridas(conexao, lista):
     cursor = conexao.cursor()
-    stringInsert = "insert into corrida (data_horaSaida, data_horaChegada, distancia, duracao, valorTarifa, sobretaxa, " \
-                                      "imposto, valorTotal, latInicio, logInicio, latFim, logFim, id_celula_inicio, id_celula_fim) " \
-                                      "values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    stringInsert = "insert into corrida (identificadorTaxi, data_horaSaida, data_horaChegada, distancia, duracao, valorTarifa, sobretaxa, " \
+                                      " imposto, gorjeta, valorTotal, latInicio, logInicio, latFim, logFim, id_celula_inicio, id_celula_fim) " \
+                                      "values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
     cursor.executemany(stringInsert, lista)
     conexao.commit()
