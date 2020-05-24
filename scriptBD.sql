@@ -31,6 +31,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `psd`.`corrida` (
   `id` INT NOT NULL AUTO_INCREMENT,
+  `identificadorTaxi` VARCHAR(45) NOT NULL,
   `data_horaSaida` DATETIME NOT NULL,
   `data_horaChegada` DATETIME NOT NULL,
   `distancia` DOUBLE NOT NULL,
@@ -38,6 +39,7 @@ CREATE TABLE IF NOT EXISTS `psd`.`corrida` (
   `valorTarifa` DOUBLE NULL,
   `sobretaxa` DOUBLE NULL,
   `imposto` DOUBLE NULL,
+  `gorjeta` DOUBLE NULL,
   `valorTotal` DOUBLE NOT NULL,
   `latInicio` DOUBLE NOT NULL,
   `logInicio` DOUBLE NOT NULL,
