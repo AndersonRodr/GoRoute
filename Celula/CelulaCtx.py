@@ -6,9 +6,12 @@ import time
 from datetime import datetime
 import statistics
 import operator
+from operator import itemgetter, attrgetter
 
 ##Leste.Sul
 ##Log.Lat
+
+listaFinalChegada = []
 
 listaInserts = []
 def criarCelulas():
@@ -90,7 +93,7 @@ def queryLucratividade(saida_chegada):
     
     return stringSQL
 
-def lucratividadeCelulas(conexao, stringSQL):    
+def lucratividadeCelulas(conexao, stringSQL, unirListasChegadaSaida):    
     cursor = conexao.cursor()
     cursor.execute(stringSQL)
     result = cursor.fetchall()
@@ -121,7 +124,7 @@ def lucratividadeCelulas(conexao, stringSQL):
             celulaDiferente = True
             listaLucrosArea = []
             celulaAux = Celula()
-            id_celula_atual = i[1]
+            id_celula_atual = i[0]
             celulaAux.id = i[0]
             corridaBanco.id = i[1]
             corridaBanco.gorjeta = i[2]
@@ -129,13 +132,67 @@ def lucratividadeCelulas(conexao, stringSQL):
             corridaBanco.identificadorTaxi = i[4]
             celulaAux.listaCorridas.append(corridaBanco)
             listaLucrosArea.append(corridaBanco.valorTarifa + corridaBanco.gorjeta)
-            celula = celulaAux
 
-        if celulaDiferente:
-            celulaDiferente = False
-            listaCelulasSelecionadas.append(celula)  
-    return listaCelulasSelecionadas
-   
+            if celulaDiferente:
+                celulaDiferente = False
+                listaCelulasSelecionadas.append(celula) 
+                celula = celulaAux
+
+    
+    if (unirListasChegadaSaida):
+        listaAux = listaFinalChegada + listaCelulasSelecionadas
+        listaFinal = sorted(listaAux, key=attrgetter('lucroMedianoMaximo','id'), reverse=True)
+        
+        listaOrdenada = listaFinal[0:19]        
+        del listaFinal[0:20]
+        for i in range(len(listaOrdenada)):
+            if i+1 < len(listaOrdenada):                
+                if listaOrdenada[i].id == listaOrdenada[i+1].id:
+                    if listaOrdenada[i].lucroMedianoMaximo > listaOrdenada[i+1].lucroMedianoMaximo:
+                        listaOrdenada.pop(i+1)
+                    else:
+                        listaOrdenada.pop(i)
+                        
+                    if len(listaFinal) > 0:                          
+                        listaOrdenada.append(listaFinal[0])
+                        listaFinal.pop(0)
+                        
+        return listaOrdenada
+    else:
+        return sorted(listaCelulasSelecionadas, key=attrgetter('lucroMedianoMaximo'), reverse=True)[0:19]
+
+def taxisVazios(conexao, listaCelulasSelecionadas):
+    stringSQL = "SELECT COUNT(*) AS quantidadeTaxi, id_celula_fim FROM corrida WHERE "
+    for i in range(len(listaCelulasSelecionadas)):
+        if i != len(listaCelulasSelecionadas) - 1:
+            stringSQL += "id_celula_fim = " + str(listaCelulasSelecionadas[i].id) +" OR "
+        else:
+            stringSQL += "id_celula_fim = " + str(listaCelulasSelecionadas[i].id) +" GROUP BY identificadorTaxi HAVING quantidadeTaxi = 1 ORDER BY id_celula_fim;"
+
+    cursor = conexao.cursor()
+    cursor.execute(stringSQL)
+    result = cursor.fetchall()
+    
+    cursor.close()
+    conexao.close()
+
+    return result
+
+def lucratividade(listaTaxisVazios, listaTopCelulas):
+    listaTaxisVazios = list(listaTaxisVazios)
+    listaTaxisVazios = [i[1] for i in listaTaxisVazios]
+    dicionarioContagemCelulaTaxis = {}
+    
+    for i in listaTaxisVazios:
+        dicionarioContagemCelulaTaxis[i] = listaTaxisVazios.count(i)
+
+    print (dicionarioContagemCelulaTaxis)
+    for i in listaTopCelulas:
+        if i.id in dicionarioContagemCelulaTaxis:
+            qtdTaxisVazios = dicionarioContagemCelulaTaxis[i.id]
+            i.qtdTaxisVazios = qtdTaxisVazios
+            i.lucratividade = i.lucroMedianoMaximo/qtdTaxisVazios
+    return listaTopCelulas
 
 def buscarCelulasPorReferencia(conexao, stringSQL):
     cursor = conexao.cursor()
@@ -150,7 +207,15 @@ def buscarCelulasPorReferencia(conexao, stringSQL):
 ##fim = time.time()
 ##print(fim - ini)
 
-##lucratividadeCelulas(getConexao())
-for i in lucratividadeCelulas(getConexao(), queryLucratividade("chegada")):
-    print (i.id, len(i.listaCorridas), i.lucroMedianoMaximo)
-##print (queryLucratividade("chegada"))
+listaFinalChegada = lucratividadeCelulas(getConexao(), queryLucratividade("chegada"), False)
+listaTopCelulas = lucratividadeCelulas(getConexao(), queryLucratividade("saida"), True)
+
+for i in listaTopCelulas:
+    print (i.id, i.lucroMedianoMaximo)
+print ()
+
+listaTaxisVazios = taxisVazios(getConexao(), listaTopCelulas)
+
+for i in lucratividade(listaTaxisVazios, listaTopCelulas):
+    if (i.qtdTaxisVazios != 0):
+        print (i.id, i.lucroMedianoMaximo, i.lucratividade)

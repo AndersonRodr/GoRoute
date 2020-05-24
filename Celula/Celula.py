@@ -6,3 +6,5 @@ class Celula():
         self.logCentral = 0.0
         self.listaCorridas = []
         self.lucroMedianoMaximo = 0.0
+        self.lucratividade = 0.0
+        self.qtdTaxisVazios = 0
