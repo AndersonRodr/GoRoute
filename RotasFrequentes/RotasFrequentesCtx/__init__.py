@@ -1,7 +1,9 @@
 import datetime as datetime
 import pandas as pd
-from Conexao import *
-from RotasFrequentes import RotasFrequentes
+from RotasFrequentes.BD import *
+from RotasFrequentes.RotaFrequentesModel import RotasFrequentes
+
+
 #!/usr/bin/env python
 # coding: utf-8
 def rotas_frequentes(corridas_selecionadas):

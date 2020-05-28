@@ -1,4 +1,3 @@
-from Celula1.Celula import  *
 from datetime import datetime
 import pandas as pd
 class RotasFrequentes():
