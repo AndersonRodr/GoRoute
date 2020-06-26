@@ -58,4 +58,4 @@ def get_rotas_frequentes():
     rotasResult.horaChegada = time.horaChegada
     return (rotasResult)
 rotas = get_rotas_frequentes()
-print("Hora de Saida: %s\nHora de Chegada: %s\n20 Rotas mais frequentes:\n%s" % (rotas.horaSaida, rotas.horaChegada, rotas.rotasFrequentesFrame))
+#print("Hora de Saida: %s\nHora de Chegada: %s\n20 Rotas mais frequentes:\n%s" % (rotas.horaSaida, rotas.horaChegada, rotas.rotasFrequentesFrame))
